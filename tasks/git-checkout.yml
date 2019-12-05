@@ -1,10 +1,10 @@
 ---
 - name: Checkout git repo
   git:
-    repo: "{{ tls_ca_git_repo }}"
-    dest: "{{ tls_ca_git_repo_path }}"
+    repo: "{{ ar_tls_ca_git_repo }}"
+    dest: "{{ ar_tls_ca_git_repo_path }}"
 
 - name: Ensure gitignore present
   copy:
-    dest: "{{ tls_ca_git_repo_path }}/.gitignore"
+    dest: "{{ ar_tls_ca_git_repo_path }}/.gitignore"
     content: '*.key'

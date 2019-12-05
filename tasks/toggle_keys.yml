@@ -1,9 +1,9 @@
 ---
 - name: Place key
   copy:
-    dest: "{{ tls_ca_base_path }}{{ key_entry.key }}"
+    dest: "{{ ar_tls_ca_base_path }}{{ key_entry.key }}"
     content: "{{ key_entry.value | b64decode }}"
-  with_dict: "{{ lookup('file', tls_ca_temp_vault_src) | from_yaml }}"
+  with_dict: "{{ lookup('file', ar_tls_ca_temp_vault_src) | from_yaml }}"
   when: keys_present is defined and keys_present
   loop_control:
     loop_var: key_entry
@@ -12,9 +12,9 @@
 
 - name: Clear key
   file:
-    path: "{{ tls_ca_base_path }}{{ key_entry.key }}"
+    path: "{{ ar_tls_ca_base_path }}{{ key_entry.key }}"
     state: absent
-  with_dict: "{{ lookup('file', tls_ca_temp_vault_src) | from_yaml }}"
+  with_dict: "{{ lookup('file', ar_tls_ca_temp_vault_src) | from_yaml }}"
   when: keys_present is not defined or not keys_present
   loop_control:
     loop_var: key_entry

@@ -1,13 +1,13 @@
 ---
 - name: Check if git status has changed
-  shell: cd {{ tls_ca_git_repo_path }} && git status --porcelain | wc -l
+  shell: cd {{ ar_tls_ca_git_repo_path }} && git status --porcelain | wc -l
   register: git_status
   changed_when: false
 
 - name: Add any additional / updated files to git
-  shell: cd {{ tls_ca_git_repo_path }} && git add .
+  shell: cd {{ ar_tls_ca_git_repo_path }} && git add .
   when: git_status.stdout != "0"
 
 - name: Commit and push changes to git
-  shell: cd {{ tls_ca_git_repo_path }} && git commit -m "{{ comment }}" && git push
+  shell: cd {{ ar_tls_ca_git_repo_path }} && git commit -m "{{ comment }}" && git push
   when: git_status.stdout != "0"

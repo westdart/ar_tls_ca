@@ -1,5 +1,5 @@
 ---
-{% set base_path_length = tls_ca_base_path | length %}
+{% set base_path_length = ar_tls_ca_base_path | length %}
 {% for key_file in key_files.files %}
 {{ key_file.path[base_path_length:] }}: {{ lookup('file', key_file.path) | b64encode }}
 {% endfor %}

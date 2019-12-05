@@ -18,10 +18,10 @@ Role Variables
 
 | Variable               | Description                 | Default    |
 | --------               | -----------                 | -------    |
-| tls_ca_path            | Path to hold all CA files   | None       |
-| tls_ca_name            | Name for the CA             | None       |
-| tls_ca_certlist        | List of CSRs to sign        | [] (empty) |
-| tls_ca_revocation_list | List of CRT names to revoke | [] (empty) |
+| ar_tls_ca_path            | Path to hold all CA files   | None       |
+| ar_tls_ca_name            | Name for the CA             | None       |
+| ar_tls_ca_certlist        | List of CSRs to sign        | [] (empty) |
+| ar_tls_ca_revocation_list | List of CRT names to revoke | [] (empty) |
 
 
 Dependencies
@@ -36,11 +36,11 @@ Example Playbook
       tasks:
         - name: "Setup CA"
           include_role:
-            name: tls_ca
+            name: ar_tls_ca
           vars:
-            tls_ca_path: "/tmp/ca"
-            tls_ca_name: "test-ca"
-            tls_ca_certlist: [
+            ar_tls_ca_path: "/tmp/ca"
+            ar_tls_ca_name: "test-ca"
+            ar_tls_ca_certlist: [
               {"certfile": "my-cert-1.crt", "csrfile": "my-cert-1.csr", "altnames": ["my-cert-1.domain"], "ipaddrs": ["1.2.3.4"]},
               {"certfile": "my-cert-2.crt", "csrfile": "my-cert-2.csr", "altnames": ["my-cert-2.domain"], "ipaddrs": ["1.2.3.4"]}
             ]

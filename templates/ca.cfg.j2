@@ -2,13 +2,13 @@
 default_ca = CA_default
 
 [ CA_default ]
-serial        = {{ tls_ca_path }}/serial
-database      = {{ tls_ca_path }}/index.txt
-new_certs_dir = {{ tls_ca_path }}/newcerts
-certificate   = {{ tls_ca_path }}/{{ tls_ca_name }}.crt
-private_key   = {{ tls_ca_path }}/{{ tls_ca_name }}.key
+serial        = {{ ar_tls_ca_path }}/serial
+database      = {{ ar_tls_ca_path }}/index.txt
+new_certs_dir = {{ ar_tls_ca_path }}/newcerts
+certificate   = {{ ar_tls_ca_path }}/{{ ar_tls_ca_name }}.crt
+private_key   = {{ ar_tls_ca_path }}/{{ ar_tls_ca_name }}.key
 default_md    = sha1
-default_days  = {{ tls_ca_default_days }}
+default_days  = {{ ar_tls_ca_default_days }}
 policy        = default_policy
 
 [ default_policy ]

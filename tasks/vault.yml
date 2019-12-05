@@ -3,7 +3,7 @@
 
 - name: Find all key files
   find:
-    paths: "{{ tls_ca_base_path }}"
+    paths: "{{ ar_tls_ca_base_path }}"
     patterns: '*.key'
     recurse: true
   register: key_files
@@ -11,26 +11,26 @@
 - name: Create the temp vault src
   template:
     src: ../templates/vault.yml.j2
-    dest: "{{ tls_ca_temp_vault_src }}"
+    dest: "{{ ar_tls_ca_temp_vault_src }}"
   changed_when: false
 
 - name: Create temp secret
   copy:
-    dest: "{{ tls_ca_temp_vault_secret }}"
-    content: "{{ tls_ca_vault_passphrase | default('password') }}"
+    dest: "{{ ar_tls_ca_temp_vault_secret }}"
+    content: "{{ ar_tls_ca_vault_passphrase | default('password') }}"
     mode: 0600
   changed_when: false
 
 - name: Obtain vault sha1
-  shell: "set -o pipefail; ansible-vault view {{ tls_ca_vault_path }} \
-            --vault-password-file={{ tls_ca_temp_vault_secret }} \
+  shell: "set -o pipefail; ansible-vault view {{ ar_tls_ca_vault_path }} \
+            --vault-password-file={{ ar_tls_ca_temp_vault_secret }} \
             | sha1sum | awk '{print $1}'"
   changed_when: false
   register: vault_sha1
   when: vault_file.stat.exists | bool
 
 - name: Obtain new vault sha1
-  shell: "sha1sum {{ tls_ca_temp_vault_src }} | awk '{print $1}'"
+  shell: "sha1sum {{ ar_tls_ca_temp_vault_src }} | awk '{print $1}'"
   register: new_vault_sha1
   changed_when: false
   when: vault_file.stat.exists | bool
@@ -39,19 +39,19 @@
     vault_state_change_required: "{{ not vault_file.stat.exists | bool or new_vault_sha1.stdout != vault_sha1.stdout }}"
 
 - name: Create the vault
-  shell: "ansible-vault encrypt {{ tls_ca_temp_vault_src }} \
-            --vault-password-file={{ tls_ca_temp_vault_secret }} \
-            --output={{ tls_ca_vault_path }}"
+  shell: "ansible-vault encrypt {{ ar_tls_ca_temp_vault_src }} \
+            --vault-password-file={{ ar_tls_ca_temp_vault_secret }} \
+            --output={{ ar_tls_ca_vault_path }}"
   when: vault_state_change_required
 
 - name: Remove tmp secret
   file:
-    path: "{{ tls_ca_temp_vault_secret }}"
+    path: "{{ ar_tls_ca_temp_vault_secret }}"
     state: absent
   changed_when: false
 
 - name: Remove vault src
   file:
-    path: "{{ tls_ca_temp_vault_src }}"
+    path: "{{ ar_tls_ca_temp_vault_src }}"
     state: absent
   changed_when: false
