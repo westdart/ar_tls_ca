@@ -1,0 +1,12 @@
+---
+- set_fact:
+    tls_ca_base_path: "{{ tls_ca_git_repo_path }}"
+
+- set_fact:
+    tls_ca_vault_path: "{{ tls_ca_git_repo_path }}/{{ tls_ca_name }}/{{ tls_ca_vault_file }}"
+
+- name: check if vault exists
+  stat:
+    path: "{{ tls_ca_vault_path }}"
+  register: vault_file
+

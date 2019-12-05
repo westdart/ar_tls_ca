@@ -1,0 +1,28 @@
+---
+- name: Prepare
+  hosts: all
+  gather_facts: false
+
+  tasks:
+    - name: Install openssl for test host
+      package:
+        name: 'openssl'
+        state: 'present'
+      become: true
+
+    - name: Ensure in dir exists
+      file:
+        path: "{{ item }}"
+        state: directory
+        mode: 0700
+      with_items:
+        - /tmp/ca/in
+
+    - name: Generate test csrs
+      shell: "openssl req -nodes -batch -out /tmp/ca/in/{{ item }}.csr -newkey rsa:2048 -days 365 -keyout {{ item }}.key \
+                -subj \"/C=UK/ST=Somewhere/L=Nearer/O=Here/OU=Working/CN=host.{{ item }}\""
+      args:
+        creates: "/tmp/ca/in/{{ item }}.csr"
+      with_items:
+        - my-cert-1
+        - my-cert-2

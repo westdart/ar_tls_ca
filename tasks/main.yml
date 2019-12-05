@@ -1,0 +1,88 @@
+---
+- name: "Assert ..."
+  assert:
+    that:
+      - "tls_ca_path is not none"
+      - "tls_ca_name is not none"
+      - "tls_ca_git_repo is none or (tls_ca_git_repo is not none and tls_ca_git_repo_path is defined)"
+    msg: "Must include required parameters: tls_ca_path, tls_ca_name and if including git (tls_ca_git_repo), must include tls_ca_git_repo_path"
+
+- name: Include git checkout
+  include_tasks: git-checkout.yml
+  when: tls_ca_git_repo is not none
+
+- name: Ensure CA keys are present
+  include_tasks: ensure_keys.yml
+  vars:
+    keys_present: true
+
+- name: Ensure directory structure
+  file:
+    path: "{{ tls_ca_item }}"
+    state: directory
+    mode: 0700
+  with_items:
+    - "{{ tls_ca_path }}"
+    - "{{ tls_ca_path }}/newcerts"
+    - "{{ tls_ca_out }}"
+    - "{{ tls_ca_in }}"
+    - "{{ tls_ca_sancfg }}"
+  loop_control:
+    loop_var: tls_ca_item
+
+- name: "Stat the CA database file"
+  stat:
+    path: '{{ tls_ca_database }}'
+  register: tls_ca_database_
+
+- name: "Stat the serial file"
+  stat:
+    path: '{{ tls_ca_serial }}'
+  register: tls_ca_serial_
+
+- name: Ensure CA database file present
+  file:
+    path: "{{ tls_ca_database }}"
+    state: touch
+  when: not tls_ca_database_.stat.exists | bool
+
+- name: Ensure serial file present
+  copy:
+    dest: "{{ tls_ca_serial }}"
+    content: '01'
+  when: not tls_ca_serial_.stat.exists | bool
+
+- name: Generate the CA config file
+  template:
+    src: ca.cfg.j2
+    dest: "{{ tls_ca_path }}/ca.cfg"
+
+- name: Generate the CA key
+  shell: "openssl genrsa -out {{ tls_ca_path }}/{{ tls_ca_name }}.key 2048"
+  args:
+    creates: "{{ tls_ca_path }}/{{ tls_ca_name }}.key"
+
+- name: Vault the keys
+  import_tasks: vault.yml
+
+- name: Self sign the CA key
+  shell: "openssl req -new -x509 -key {{ tls_ca_path }}/{{ tls_ca_name }}.key -out \
+          {{ tls_ca_path }}/{{ tls_ca_name }}.crt -subj \"/CN=ca.{{ tls_ca_name }}\" -days {{ tls_ca_ca_default_days }}"
+  args:
+    creates: "{{ tls_ca_path }}/{{ tls_ca_name }}.crt"
+
+- name: Copy CA crt to out dir
+  copy:
+    src: "{{ tls_ca_path }}/{{ tls_ca_name }}.crt"
+    dest: "{{ tls_ca_out }}/{{ tls_ca_name }}.crt"
+    remote_src: yes
+
+# This will remove the CA keys from the file system
+- name: Include signing of certs
+  import_tasks: sign.yml
+
+- name: Include git checkin
+  include_tasks: git-checkin.yml
+  vars:
+    comment: "automated build changes as of {{ ansible_date_time.date }} {{ ansible_date_time.time }}"
+  when: tls_ca_git_repo is not none

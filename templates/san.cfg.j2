@@ -1,0 +1,11 @@
+subjectAltName = @alt_names
+basicConstraints = CA:FALSE
+keyUsage = {{ tls_ca_keyusage | d('nonRepudiation, digitalSignature, keyEncipherment') }}
+
+[ alt_names ]
+{% for alt_name in tls_ca_item.altnames %}
+DNS.{{ loop.index }} = {{ alt_name }}
+{% endfor %}
+{% for ip_addr in tls_ca_item.ipaddrs %}
+IP.{{ loop.index }} = {{ ip_addr }}
+{% endfor %}

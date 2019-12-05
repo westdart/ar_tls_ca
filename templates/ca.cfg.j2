@@ -1,0 +1,25 @@
+[ ca ]
+default_ca = CA_default
+
+[ CA_default ]
+serial        = {{ tls_ca_path }}/serial
+database      = {{ tls_ca_path }}/index.txt
+new_certs_dir = {{ tls_ca_path }}/newcerts
+certificate   = {{ tls_ca_path }}/{{ tls_ca_name }}.crt
+private_key   = {{ tls_ca_path }}/{{ tls_ca_name }}.key
+default_md    = sha1
+default_days  = {{ tls_ca_default_days }}
+policy        = default_policy
+
+[ default_policy ]
+# Set to:
+#   match: The field value must match the same field in the CA Cert
+#   supplied: The field must be provided by the caller
+#   optional: The field may be provided by the caller
+# Any fields not mentioned are ignored
+countryName = optional
+stateOrProvinceName = optional
+localityName = optional
+organizationName = optional
+organizationalUnitName = optional
+commonName = supplied

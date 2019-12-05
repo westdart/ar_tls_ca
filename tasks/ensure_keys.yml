@@ -1,0 +1,31 @@
+---
+- include_tasks: vault_init.yml
+
+- name: Create temp secret
+  copy:
+    dest: "{{ tls_ca_temp_vault_secret }}"
+    content: "{{ tls_ca_vault_passphrase | default('password') }}"
+    mode: 0600
+  changed_when: false
+
+- name: Obtain vault content
+  shell: "set -o pipefail; ansible-vault view {{ tls_ca_vault_path }} \
+            --vault-password-file={{ tls_ca_temp_vault_secret }} > {{ tls_ca_temp_vault_src }}"
+  when: vault_file.stat.exists | bool
+  changed_when: false
+
+- name: Toggle keys
+  include_tasks: toggle_keys.yml
+  when: vault_file.stat.exists | bool
+
+- name: Remove tmp secret
+  file:
+    path: "{{ tls_ca_temp_vault_secret }}"
+    state: absent
+  changed_when: false
+
+- name: Remove vault src
+  file:
+    path: "{{ tls_ca_temp_vault_src }}"
+    state: absent
+  changed_when: false

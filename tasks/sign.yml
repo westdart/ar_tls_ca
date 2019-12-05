@@ -1,0 +1,96 @@
+---
+# This may also be called externally in isolation
+- name: Stat the CA base dir
+  stat:
+    path: "{{ tls_ca_path }}"
+  register: ca_files
+
+- name: Include git checkout
+  include_tasks: git-checkout.yml
+  when: tls_ca_git_repo is not none and not ca_files.stat.exists | bool
+
+- name: Generate san config for list of certs
+  template:
+    src: san.cfg.j2
+    dest: "{{ tls_ca_sancfg }}/{{ tls_ca_item.certfile }}.san.cfg"
+  with_items: "{{ tls_ca_certlist }}"
+  register: san_config
+  loop_control:
+    loop_var: tls_ca_item
+
+- name: Ensure CA keys are present
+  include_tasks: ensure_keys.yml
+  vars:
+    keys_present: true
+
+- name: Process revocation list
+  shell: "test -f {{ tls_ca_out }}/{{ tls_ca_item }}.crt || exit 0; openssl ca -config {{ ca_base_path }}/ca.cfg -revoke {{ tls_ca_out }}/{{ tls_ca_item }}.crt && rm -f {{ tls_ca_out }}/{{ tls_ca_item }}.crt"
+  with_items: "{{ tls_ca_revocation_list }}"
+  loop_control:
+    loop_var: tls_ca_item
+
+- name: Revoke certs where san config has changed
+  shell: "test -f {{ tls_ca_out }}/{{ san_config_result.tls_ca_item.certfile }} || exit 0; openssl ca -config {{ ca_base_path }}/ca.cfg -revoke {{ tls_ca_out }}/{{ san_config_result.tls_ca_item.certfile }} && rm -f {{ tls_ca_out }}/{{ san_config_result.tls_ca_item.certfile }}"
+  when: san_config_result.changed
+  with_items: "{{ san_config.results }}"
+  loop_control:
+    loop_var: san_config_result
+
+- name: Revoke certs where incomming csr disagress with current crt public key
+  shell: |
+    test -f {{ tls_ca_out }}/{{ tls_ca_item.certfile }} || exit 0
+    test -f {{ tls_ca_in }}/{{ tls_ca_item.csrfile }} || exit 0
+    mod1=$(openssl req -in {{ tls_ca_in }}/{{ tls_ca_item.csrfile }} -noout -modulus)
+    mod2=$(openssl x509 -noout -modulus -in {{ tls_ca_out }}/{{ tls_ca_item.certfile }})
+    if [ "$mod1" == "$mod2" ]
+    then
+      exit 0
+    else
+      openssl ca -config {{ ca_base_path }}/ca.cfg -revoke {{ tls_ca_out }}/{{ tls_ca_item.certfile }} && rm -f {{ tls_ca_out }}/{{ tls_ca_item.certfile }}
+    fi
+  with_items: "{{ tls_ca_certlist }}"
+  loop_control:
+    loop_var: tls_ca_item
+
+- name: Check whether certs are expired or due to become expired
+  shell: "test -f {{ tls_ca_out }}/{{ tls_ca_item.certfile }} || exit 0; openssl x509 -checkend $(( 86400 * {{ tls_ca_lookahead_days }} )) -enddate -in {{ tls_ca_out }}/{{ tls_ca_item.certfile }}"
+  changed_when: false
+  failed_when: false
+  with_items: "{{ tls_ca_certlist }}"
+  register: cert_expiry
+  loop_control:
+    loop_var: tls_ca_item
+
+- name: Revoke certs where expired or due to become expired
+  shell: "test -f {{ tls_ca_out }}/{{ cert_expiry_result.tls_ca_item.certfile }} || exit 0; openssl ca -config {{ ca_base_path }}/ca.cfg -revoke {{ tls_ca_out }}/{{ cert_expiry_result.tls_ca_item.certfile }} && rm -f {{ tls_ca_out }}/{{ cert_expiry_result.tls_ca_item.certfile }}"
+  when: cert_expiry_result.rc != 0
+  with_items: "{{ cert_expiry.results }}"
+  loop_control:
+    loop_var: cert_expiry_result
+
+- debug:
+    msg: "san cfg file: {{ tls_ca_sancfg }}/{{ tls_ca_item.certfile }}.san.cfg"
+  with_items: "{{ tls_ca_certlist }}"
+  loop_control:
+    loop_var: tls_ca_item
+
+- name: Sign list of certs
+  shell: "openssl ca -batch -notext -config {{ tls_ca_path }}/ca.cfg -out {{ tls_ca_out }}/{{ tls_ca_item.certfile }} \
+            -extfile {{ tls_ca_sancfg }}/{{ tls_ca_item.certfile }}.san.cfg \
+            -infiles {{ tls_ca_in }}/{{ tls_ca_item.csrfile }}"
+  args:
+    creates: "{{ tls_ca_out }}/{{ tls_ca_item.certfile }}"
+  with_items: "{{ tls_ca_certlist }}"
+  loop_control:
+    loop_var: tls_ca_item
+
+- name: Include git checkin
+  include_tasks: git-checkin.yml
+  vars:
+    comment: "automated signing changes as of {{ ansible_date_time.date }} {{ ansible_date_time.time }}"
+  when: tls_ca_git_repo is not none
+
+- name: Ensure CA keys are absent
+  include_tasks: ensure_keys.yml
+  vars:
+    keys_present: false

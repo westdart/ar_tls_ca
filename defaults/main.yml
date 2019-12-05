@@ -1,0 +1,18 @@
+---
+tls_ca_database: "{{ tls_ca_path }}/index.txt"
+tls_ca_serial: "{{ tls_ca_path }}/serial"
+tls_ca_sancfg: "{{ tls_ca_path }}/sancfg"
+tls_ca_out: "{{ tls_ca_path }}/out"
+tls_ca_in: "{{ tls_ca_path }}/in"
+
+tls_ca_ca_default_days: 3650 # 10 years
+tls_ca_default_days: 365 # 1 year
+tls_ca_lookahead_days: 30 # Certificate will be renewed within 30 days of expiry
+
+tls_ca_vault_file: '.vault'
+
+tls_ca_temp_vault_src: '/tmp/vault.yml'
+tls_ca_temp_vault_secret: '/tmp/.vault_secret'
+
+tls_ca_git_repo: null
+tls_ca_git_repo_path: "{{ lookup('env','HOME') }}/tls-ca"
