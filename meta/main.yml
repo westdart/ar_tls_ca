@@ -1,8 +1,8 @@
 ---
 galaxy_info:
-  author: David Stewart <david.stewart@estafet.com>
+  author: David Stewart <dstewart@redhat.com>
   description: Configure basic CA using openssl
-  company: Estafet Ltd.
+  company: RedHat Ltd.
   license: license (BSD, MIT)
   min_ansible_version: 1.2
   galaxy_tags: []
