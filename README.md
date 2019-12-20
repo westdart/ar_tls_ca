@@ -1,5 +1,4 @@
-tls_ca
-======
+# ar_tls_ca
 
 Setup a basic CA and sign certificates
 The 'main.yml' set of tasks sets up a CA using openssl.
@@ -8,29 +7,25 @@ separately when required.
 Optionally a git repo can be specified, where the state of the CA will 
 be held, keys are wrapped in a vault file
 
-Requirements
-------------
+# Requirements
 
 - openssl
 
-Role Variables
---------------
+## Role Variables
 
-| Variable               | Description                 | Default    |
-| --------               | -----------                 | -------    |
+| Variable                  | Description                 | Default    |
+| --------                  | -----------                 | -------    |
 | ar_tls_ca_path            | Path to hold all CA files   | None       |
 | ar_tls_ca_name            | Name for the CA             | None       |
 | ar_tls_ca_certlist        | List of CSRs to sign        | [] (empty) |
 | ar_tls_ca_revocation_list | List of CRT names to revoke | [] (empty) |
 
 
-Dependencies
-------------
+## Dependencies
 
 None
 
-Example Playbook
-----------------
+## Example Playbook
 
     - hosts: servers
       tasks:
@@ -46,13 +41,11 @@ Example Playbook
             ]
 
 
-License
--------
+## License
 
 BSD
 
-Author Information
-------------------
+## Author Information
 
 An optional section for the role authors to include contact information, or a
 website (HTML is not allowed).
