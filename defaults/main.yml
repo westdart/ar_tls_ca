@@ -15,4 +15,4 @@ ar_tls_ca_temp_vault_src: '/tmp/vault.yml'
 ar_tls_ca_temp_vault_secret: '/tmp/.vault_secret'
 
 ar_tls_ca_git_repo: null
-ar_tls_ca_git_repo_path: "{{ lookup('env','HOME') }}/tls-ca"
+ar_tls_ca_git_repo_path: "/tmp/{{ ar_tls_ca_git_repo.split('/') | last }}"

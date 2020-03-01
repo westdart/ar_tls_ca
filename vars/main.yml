@@ -9,3 +9,6 @@ ar_tls_ca_certlist: []
 # ]
 
 ar_tls_ca_revocation_list: [] # Just a list of CRT names (no path or file endings)
+
+ar_tls_ca_git_comment: ''
+ar_tls_ca_git_version: 'master'

@@ -1,13 +1,10 @@
 ---
-- name: Check if git status has changed
-  shell: cd {{ ar_tls_ca_git_repo_path }} && git status --porcelain | wc -l
-  register: git_status
-  changed_when: false
-
-- name: Add any additional / updated files to git
-  shell: cd {{ ar_tls_ca_git_repo_path }} && git add .
-  when: git_status.stdout != "0"
-
-- name: Commit and push changes to git
-  shell: cd {{ ar_tls_ca_git_repo_path }} && git commit -m "{{ comment }}" && git push
-  when: git_status.stdout != "0"
+- include_role:
+    name: ar_git_repo
+    tasks_from: checkin
+  vars:
+    ar_git_repo_url: "{{ ar_tls_ca_git_repo }}"
+    ar_git_repo_ssh_key: "{{ ar_tls_ca_git_ssh_key }}"
+    ar_git_repo_ssh_key_pass: "{{ ar_tls_ca_git_ssh_key_pass | default('') }}"
+    ar_git_repo_dest: "{{ ar_tls_ca_git_repo_path }}"
+    ar_git_repo_commit_comment: "{{ ar_tls_ca_git_comment | default('') }}"

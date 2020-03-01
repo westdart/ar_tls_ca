@@ -1,10 +1,11 @@
 ---
-- name: Checkout git repo
-  git:
-    repo: "{{ ar_tls_ca_git_repo }}"
-    dest: "{{ ar_tls_ca_git_repo_path }}"
-
-- name: Ensure gitignore present
-  copy:
-    dest: "{{ ar_tls_ca_git_repo_path }}/.gitignore"
-    content: '*.key'
+- include_role:
+    name: ar_git_repo
+    tasks_from: checkout
+  vars:
+    ar_git_repo_url: "{{ ar_tls_ca_git_repo }}"
+    ar_git_repo_ssh_key: "{{ ar_tls_ca_git_ssh_key }}"
+    ar_git_repo_ssh_key_pass: "{{ ar_tls_ca_git_ssh_key_pass | default('') }}"
+    ar_git_repo_gitignore_entries: ['*.key']
+    ar_git_repo_dest: "{{ ar_tls_ca_git_repo_path }}"
+    ar_git_repo_version: "{{ ar_tls_ca_git_version }}"
