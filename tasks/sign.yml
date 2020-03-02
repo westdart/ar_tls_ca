@@ -24,18 +24,22 @@
     keys_present: true
 
 - name: Process revocation list
-  shell: "test -f {{ ar_tls_ca_out }}/{{ ar_tls_ca_item }}.crt || exit 0; openssl ca -config {{ ca_base_path }}/ca.cfg -revoke {{ ar_tls_ca_out }}/{{ ar_tls_ca_item }}.crt && rm -f {{ ar_tls_ca_out }}/{{ ar_tls_ca_item }}.crt"
+  shell: "test -f {{ ar_tls_ca_out }}/{{ ar_tls_ca_item }}.crt || exit 0; openssl ca -config {{ ar_tls_ca_path }}/ca.cfg -revoke {{ ar_tls_ca_out }}/{{ ar_tls_ca_item }}.crt && rm -f {{ ar_tls_ca_out }}/{{ ar_tls_ca_item }}.crt"
   with_items: "{{ ar_tls_ca_revocation_list }}"
   loop_control:
     loop_var: ar_tls_ca_item
 
 - name: Revoke certs where san config has changed
-  shell: "test -f {{ ar_tls_ca_out }}/{{ san_config_result.ar_tls_ca_item.certfile }} || exit 0; openssl ca -config {{ ca_base_path }}/ca.cfg -revoke {{ ar_tls_ca_out }}/{{ san_config_result.ar_tls_ca_item.certfile }} && rm -f {{ ar_tls_ca_out }}/{{ san_config_result.ar_tls_ca_item.certfile }}"
+  shell: "test -f {{ ar_tls_ca_out }}/{{ san_config_result.ar_tls_ca_item.certfile }} || exit 0; openssl ca -config {{ ar_tls_ca_path }}/ca.cfg -revoke {{ ar_tls_ca_out }}/{{ san_config_result.ar_tls_ca_item.certfile }} && rm -f {{ ar_tls_ca_out }}/{{ san_config_result.ar_tls_ca_item.certfile }}"
   when: san_config_result.changed
   with_items: "{{ san_config.results }}"
   loop_control:
     loop_var: san_config_result
 
+# Marked as 'changed_when: false' as this will trigger a subsequent change, though strictly speaking this should be
+# marked as change, the complexity is in the looping, the shell could be setup to return a code on change, but the set
+# of return values would need to be queried for changed and fail (as non-zero return marking change would require fail
+# to be explicitly handled. All do-able, just time.
 - name: Revoke certs where incomming csr disagress with current crt public key
   shell: |
     test -f {{ ar_tls_ca_out }}/{{ ar_tls_ca_item.certfile }} || exit 0
@@ -46,11 +50,12 @@
     then
       exit 0
     else
-      openssl ca -config {{ ca_base_path }}/ca.cfg -revoke {{ ar_tls_ca_out }}/{{ ar_tls_ca_item.certfile }} && rm -f {{ ar_tls_ca_out }}/{{ ar_tls_ca_item.certfile }}
+      openssl ca -config {{ ar_tls_ca_path }}/ca.cfg -revoke {{ ar_tls_ca_out }}/{{ ar_tls_ca_item.certfile }} && rm -f {{ ar_tls_ca_out }}/{{ ar_tls_ca_item.certfile }}
     fi
   with_items: "{{ ar_tls_ca_certlist }}"
   loop_control:
     loop_var: ar_tls_ca_item
+  changed_when: false
 
 - name: Check whether certs are expired or due to become expired
   shell: "test -f {{ ar_tls_ca_out }}/{{ ar_tls_ca_item.certfile }} || exit 0; openssl x509 -checkend $(( 86400 * {{ ar_tls_ca_lookahead_days }} )) -enddate -in {{ ar_tls_ca_out }}/{{ ar_tls_ca_item.certfile }}"
@@ -62,7 +67,7 @@
     loop_var: ar_tls_ca_item
 
 - name: Revoke certs where expired or due to become expired
-  shell: "test -f {{ ar_tls_ca_out }}/{{ cert_expiry_result.tls_ca_item.certfile }} || exit 0; openssl ca -config {{ ca_base_path }}/ca.cfg -revoke {{ ar_tls_ca_out }}/{{ cert_expiry_result.tls_ca_item.certfile }} && rm -f {{ ar_tls_ca_out }}/{{ cert_expiry_result.tls_ca_item.certfile }}"
+  shell: "test -f {{ ar_tls_ca_out }}/{{ cert_expiry_result.tls_ca_item.certfile }} || exit 0; openssl ca -config {{ ar_tls_ca_path }}/ca.cfg -revoke {{ ar_tls_ca_out }}/{{ cert_expiry_result.tls_ca_item.certfile }} && rm -f {{ ar_tls_ca_out }}/{{ cert_expiry_result.tls_ca_item.certfile }}"
   when: cert_expiry_result.rc != 0
   with_items: "{{ cert_expiry.results }}"
   loop_control:
