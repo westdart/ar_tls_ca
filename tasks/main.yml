@@ -1,11 +1,7 @@
 ---
-- name: "Assert ..."
+- name: "Assertions: ar_tls_ca"
   assert:
-    that:
-      - "ar_tls_ca_path is not none"
-      - "ar_tls_ca_name is not none"
-      - "ar_tls_ca_git_repo is none or (ar_tls_ca_git_repo is not none and ar_tls_ca_git_repo_path is defined)"
-    msg: "Must include required parameters: ar_tls_ca_path, ar_tls_ca_name and if including git (ar_tls_ca_git_repo), must include ar_tls_ca_git_repo_path"
+    that: "{{ ar_tls_ca_basic_assertions }}"
 
 - name: Include git checkout
   include_tasks: git-checkout.yml

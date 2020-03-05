@@ -15,4 +15,24 @@ ar_tls_ca_temp_vault_src: '/tmp/vault.yml'
 ar_tls_ca_temp_vault_secret: '/tmp/.vault_secret'
 
 ar_tls_ca_git_repo: null
+ar_tls_ca_git_ssh_key: null
 ar_tls_ca_git_repo_path: "/tmp/{{ ar_tls_ca_git_repo.split('/') | last }}"
+
+ar_tls_ca_basic_assertions:
+  - "ar_tls_ca_path is defined"
+  - "ar_tls_ca_path is not none"
+  - "ar_tls_ca_path | length"
+  - "ar_tls_ca_name is defined"
+  - "ar_tls_ca_name is not none"
+  - "ar_tls_ca_name | length"
+
+ar_tls_ca_git_assertions:
+  - "ar_tls_ca_git_repo is defined"
+  - "ar_tls_ca_git_repo is not none"
+  - "ar_tls_ca_git_repo | length"
+  - "ar_tls_ca_git_repo_path is defined"
+  - "ar_tls_ca_git_repo_path is not none"
+  - "ar_tls_ca_git_repo_path | length"
+  - "ar_tls_ca_git_ssh_key is defined"
+  - "ar_tls_ca_git_ssh_key is not none"
+  - "ar_tls_ca_git_ssh_key | length"

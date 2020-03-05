@@ -3,7 +3,7 @@ ar_tls_ca_path: null
 ar_tls_ca_name: null
 ar_tls_ca_certlist: []
 # Structure:
-# var: [
+# <ar_tls_ca_certlist var>: [
 #   {"certfile": "<filename>", "csrfile": "<filename>", "altnames": ["<name1>"], "ipaddrs": ["<ip1>"]},
 #   ...
 # ]

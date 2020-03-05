@@ -1,4 +1,8 @@
 ---
+- name: "Assertions: ar_tls_ca"
+  assert:
+    that: "{{ ar_tls_ca_git_assertions }}"
+
 - include_role:
     name: ar_git_repo
     tasks_from: checkin
