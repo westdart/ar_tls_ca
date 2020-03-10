@@ -1,52 +1,36 @@
 ---
+- include_tasks: load-env-vars.yml
+
 - name: "Assertions: ar_tls_ca"
   assert:
     that: "{{ ar_tls_ca_basic_assertions }}"
-
-- name: Include git checkout
-  include_tasks: git-checkout.yml
-  when: ar_tls_ca_git_repo is not none
 
 - name: Ensure CA keys are present
   include_tasks: ensure_keys.yml
   vars:
     keys_present: true
 
-- name: Ensure directory structure
-  file:
-    path: "{{ ar_tls_ca_item }}"
-    state: directory
-    mode: 0700
-  with_items:
-    - "{{ ar_tls_ca_path }}"
-    - "{{ ar_tls_ca_path }}/newcerts"
-    - "{{ ar_tls_ca_out }}"
-    - "{{ ar_tls_ca_in }}"
-    - "{{ ar_tls_ca_sancfg }}"
-  loop_control:
-    loop_var: ar_tls_ca_item
-
 - name: "Stat the CA database file"
   stat:
     path: '{{ ar_tls_ca_database }}'
-  register: ar_tls_ca_database_
+  register: _ar_tls_ca_database
 
 - name: "Stat the serial file"
   stat:
     path: '{{ ar_tls_ca_serial }}'
-  register: ar_tls_ca_serial_
+  register: _ar_tls_ca_serial
 
 - name: Ensure CA database file present
   file:
     path: "{{ ar_tls_ca_database }}"
     state: touch
-  when: not ar_tls_ca_database_.stat.exists | bool
+  when: not _ar_tls_ca_database.stat.exists | bool
 
 - name: Ensure serial file present
   copy:
     dest: "{{ ar_tls_ca_serial }}"
     content: '01'
-  when: not ar_tls_ca_serial_.stat.exists | bool
+  when: not _ar_tls_ca_serial.stat.exists | bool
 
 - name: Generate the CA config file
   template:
@@ -75,7 +59,7 @@
 
 # This will remove the CA keys from the file system
 - name: Include signing of certs
-  import_tasks: sign.yml
+  import_tasks: _sign.yml
 
 - name: Include git checkin
   include_tasks: git-checkin.yml

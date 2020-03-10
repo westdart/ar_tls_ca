@@ -1,5 +1,5 @@
 ---
-ar_tls_ca_path: null
+ar_tls_ca_git_repo: null
 ar_tls_ca_name: null
 ar_tls_ca_certlist: []
 # Structure:

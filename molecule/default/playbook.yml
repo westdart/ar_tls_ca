@@ -7,7 +7,6 @@
       include_role:
         name: ar_tls_ca
       vars:
-        ar_tls_ca_path: "/tmp/ca"
         ar_tls_ca_name: "test-ca"
         ar_tls_ca_certlist: [
           {"certfile": "my-cert-1.crt", "csrfile": "my-cert-1.csr", "altnames": ["my-cert-1.domain"], "ipaddrs": ["1.2.3.4"]},

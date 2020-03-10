@@ -15,7 +15,6 @@ be held, keys are wrapped in a vault file
 
 | Variable                  | Description                 | Default    |
 | --------                  | -----------                 | -------    |
-| ar_tls_ca_path            | Path to hold all CA files   | None       |
 | ar_tls_ca_name            | Name for the CA             | None       |
 | ar_tls_ca_certlist        | List of CSRs to sign        | [] (empty) |
 | ar_tls_ca_revocation_list | List of CRT names to revoke | [] (empty) |
@@ -33,7 +32,7 @@ None
           include_role:
             name: ar_tls_ca
           vars:
-            ar_tls_ca_path: "/tmp/ca"
+            ar_tls_ca_git_repo: "git@git-host:group/repo.git"
             ar_tls_ca_name: "test-ca"
             ar_tls_ca_certlist: [
               {"certfile": "my-cert-1.crt", "csrfile": "my-cert-1.csr", "altnames": ["my-cert-1.domain"], "ipaddrs": ["1.2.3.4"]},

@@ -1,0 +1,67 @@
+---
+- name: "Assertions: ar_tls_ca"
+  assert:
+    that: "{{ ar_tls_ca_git_assertions }}"
+
+- include_role:
+    name: ar_git_repo
+    tasks_from: checkout
+  vars:
+    ar_git_repo_url: "{{ ar_tls_ca_git_repo }}"
+    ar_git_repo_ssh_key: "{{ ar_tls_ca_git_ssh_key }}"
+    ar_git_repo_ssh_key_pass: "{{ ar_tls_ca_git_ssh_key_pass | default('') }}"
+    ar_git_repo_gitignore_entries: ['*.key']
+    ar_git_repo_version: "{{ ar_tls_ca_git_version }}"
+
+- set_fact:
+    _ar_tls_ca_git_repo_dest: "{{ _ar_git_repo_paths[ar_tls_ca_git_repo] }}"
+    ar_tls_ca_path: "{{ _ar_git_repo_paths[ar_tls_ca_git_repo] }}/{{ ar_tls_ca_name }}"
+
+- name: check status of link
+  stat:
+    path: "{{ ar_tls_ca_git_dest_link }}"
+  register: sym
+
+- name: Remove directory if placed where symlink should be
+  file:
+    path: "{{ ar_tls_ca_git_dest_link }}"
+    state: absent
+  when: sym.stat.islnk is defined and sym.stat.islnk == False
+
+- name: Unlink existing link as not pointing to correct location
+  shell: unlink {{ ar_tls_ca_git_dest_link }}
+  when: sym.stat.islnk is defined and sym.stat.islnk and sym.stat.lnk_target != _ar_tls_ca_git_repo_dest
+  changed_when: false
+
+- name: set symbolic link to path
+  file:
+    src: "{{ _ar_tls_ca_git_repo_dest }}"
+    dest: "{{ ar_tls_ca_git_dest_link }}"
+    state: link
+  when: sym.stat.islnk is not defined or sym.stat.islnk == False or sym.stat.lnk_target != _ar_tls_ca_git_repo_dest
+  changed_when: false
+
+- set_fact:
+    ar_tls_ca_path_link: "{{ ar_tls_ca_git_dest_link }}/{{ ar_tls_ca_name }}"
+
+- set_fact:
+    ar_tls_ca_database: "{{ ar_tls_ca_path_link }}/index.txt"
+    ar_tls_ca_serial: "{{ ar_tls_ca_path_link }}/serial"
+    ar_tls_ca_sancfg: "{{ ar_tls_ca_path_link }}/sancfg"
+    ar_tls_ca_out: "{{ ar_tls_ca_path_link }}/out"
+    ar_tls_ca_in: "{{ ar_tls_ca_path_link }}/in"
+
+- name: Ensure directory structure
+  file:
+    path: "{{ ar_tls_ca_item }}"
+    state: directory
+# TODO: git does not track directory permission, therefore this always triggers a change. Work out how to have git create dirs with required permissions.
+#    mode: 0700
+  with_items:
+    - "{{ ar_tls_ca_path_link }}"
+    - "{{ ar_tls_ca_path_link }}/newcerts"
+    - "{{ ar_tls_ca_out }}"
+    - "{{ ar_tls_ca_in }}"
+    - "{{ ar_tls_ca_sancfg }}"
+  loop_control:
+    loop_var: ar_tls_ca_item

@@ -1,10 +1,4 @@
 ---
-ar_tls_ca_database: "{{ ar_tls_ca_path }}/index.txt"
-ar_tls_ca_serial: "{{ ar_tls_ca_path }}/serial"
-ar_tls_ca_sancfg: "{{ ar_tls_ca_path }}/sancfg"
-ar_tls_ca_out: "{{ ar_tls_ca_path }}/out"
-ar_tls_ca_in: "{{ ar_tls_ca_path }}/in"
-
 ar_tls_ca_ca_default_days: 3650 # 10 years
 ar_tls_ca_default_days: 365 # 1 year
 ar_tls_ca_lookahead_days: 30 # Certificate will be renewed within 30 days of expiry
@@ -16,7 +10,6 @@ ar_tls_ca_temp_vault_secret: '/tmp/.vault_secret'
 
 ar_tls_ca_git_repo: null
 ar_tls_ca_git_ssh_key: null
-ar_tls_ca_git_repo_path: "/tmp/{{ ar_tls_ca_git_repo.split('/') | last }}"
 
 ar_tls_ca_basic_assertions:
   - "ar_tls_ca_path is defined"
@@ -30,9 +23,8 @@ ar_tls_ca_git_assertions:
   - "ar_tls_ca_git_repo is defined"
   - "ar_tls_ca_git_repo is not none"
   - "ar_tls_ca_git_repo | length"
-  - "ar_tls_ca_git_repo_path is defined"
-  - "ar_tls_ca_git_repo_path is not none"
-  - "ar_tls_ca_git_repo_path | length"
   - "ar_tls_ca_git_ssh_key is defined"
   - "ar_tls_ca_git_ssh_key is not none"
   - "ar_tls_ca_git_ssh_key | length"
+
+ar_tls_ca_git_dest_link: '/tmp/tls_ca_lnk'
