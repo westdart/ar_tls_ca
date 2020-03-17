@@ -10,19 +10,40 @@ be held, keys are wrapped in a vault file
 # Requirements
 
 - openssl
+- git
 
 ## Role Variables
+The following details:
+- the parameters that should be passed to the role (aka vars)
+- the defaults that are held
+- the secrets that should generally be sourced from an ansible vault.
 
-| Variable                  | Description                 | Default    |
-| --------                  | -----------                 | -------    |
-| ar_tls_ca_name            | Name for the CA             | None       |
-| ar_tls_ca_certlist        | List of CSRs to sign        | [] (empty) |
-| ar_tls_ca_revocation_list | List of CRT names to revoke | [] (empty) |
+### Parameters:
+| Variable                  | Description                                                                     | Default    |
+| --------                  | -----------                                                                     | -------    |
+| ar_tls_ca_name            | Name for the CA                                                                 | None       |
+| ar_tls_ca_certlist        | List of CSRs to sign                                                            | [] (empty) |
+| ar_tls_ca_revocation_list | List of CRT names to revoke                                                     | [] (empty) |
+| ar_tls_ca_git_repo        | Git repository holding state                                                    | None       |
+| ar_tls_ca_git_version     | The version of the repository to use (note should be updateable, i.e. a branch) | 'master'   |
+| ar_tls_ca_git_comment     | Additional comment text to add to commits                                       | ''         |
 
+
+### Defaults
+| Variable                   | Description                                                              | Default           |
+| --------                   | -----------                                                              | -------           |
+| ar_tls_ca_ca_default_days  | Number of days that the CA certificate should be valid                   |                   |
+| ar_tls_ca_default_days     | Number of days that the certificates being signed should be valid        |                   |
+| ar_tls_ca_lookahead_days   | Max number of days overlap with expiring certificates                    |                   |
+| ar_tls_ca_vault_file       | The vault file containing CA secrets                                     |                   |
+| ar_tls_ca_git_ssh_key      | The key to use to access the git repository                              |                   |
+| ar_tls_ca_basic_assertions | List of assertions made                                                  |                   |
+| ar_tls_ca_git_assertions   | List of assertions made                                                  |                   |
+| ar_tls_ca_git_dest_link    | Symbolic link to create to ensure paths in CA config files remain static | '/tmp/tls_ca_lnk' |
 
 ## Dependencies
 
-None
+- ar_git_repo
 
 ## Example Playbook
 
@@ -32,8 +53,9 @@ None
           include_role:
             name: ar_tls_ca
           vars:
-            ar_tls_ca_git_repo: "git@git-host:group/repo.git"
             ar_tls_ca_name: "test-ca"
+            ar_tls_ca_git_repo: "git@git-host:group/repo.git"
+            ar_tls_ca_git_ssh_key: "my-key"
             ar_tls_ca_certlist: [
               {"certfile": "my-cert-1.crt", "csrfile": "my-cert-1.csr", "altnames": ["my-cert-1.domain"], "ipaddrs": ["1.2.3.4"]},
               {"certfile": "my-cert-2.crt", "csrfile": "my-cert-2.csr", "altnames": ["my-cert-2.domain"], "ipaddrs": ["1.2.3.4"]}
@@ -42,73 +64,8 @@ None
 
 ## License
 
-BSD
+MIT / BSD
 
 ## Author Information
 
-An optional section for the role authors to include contact information, or a
-website (HTML is not allowed).
-
-
-# Notes leading to creation of this role
-## Create the CA:
-```
-mkdir ca
-mkdir ca/newcerts
-touch ca/index.txt
-echo '01' > ca/serial
-
-openssl genrsa -out ca/dev.my-company.ca.key 2048
-openssl req -new -x509 -key ca/dev.my-company.ca.key -out ca/dev.my-company.ca.crt -subj "/CN=dev.my-company.ca"
-```
-
-## Create the server key and CSR:
-```
-openssl req -nodes -batch -out tls-csr.pem -newkey rsa:2048 -days 365 -keyout tls-key.pem \
-  -subj "/C=UK/ST=Buckinghamshire/L=Milton Keynes/O=Boeing/OU=MJDI Dev/CN=amq-interconnect.amqtest1.svc"
-
--passout pass:password 
-```
-
-## Sign the CSR:
-```
-openssl ca -bath -config ca/ca.cfg -out tls-crt.pem -extfile san.cfg -infiles tls-csr.pem
-```
-
-## Check the CRT has the alternate names (DNS)
-```
-openssl x509 -in tls-crt.pem -text | grep amq-interconnect-tls-amqtest1.a1.training.local
-```
-
-## Create java truststore from CA key
-```
-keytool -import -keystore truststore.ks -alias caroot -file ca/dev.my-company.ca.crt -storepass password \
-  -trustcacerts -no-prompt
-```
-
-## Clear the CA state:
-```
-rm -f ca/index.txt* ca/serial* ca/newcerts/* 
-touch ca/index.txt
-echo '01' > ca/serial
-```
-
-## Comparing the moduli:
-Cert Modulus:
-```
-openssl x509 -noout -text -in generated/DEV/certs/MESH.crt | grep -A18 'Modulus:' | tr -d ' '
-```
-
-CSR Modulus:
-```
-openssl req -in generated/DEV/certs/MESH.csr -noout -pubkey | openssl pkey -pubin -inform PEM -text -noout | tr -d ' '
-```
-
-Private key Modulus:
-```
-cat  private.key | openssl pkey -pubout -text | grep -A18 'modulus:' | tr -d ' '
-```
-or with key base64 encoded in ansible vault:
-```
-ansible-vault view vault | grep key | awk -F "'" '{print $2}' | base64 -d | openssl pkey -pubout -text | grep -A18 'modulus:' | tr -d ' '
-```
+This role was created in 2020 by David Stewart (dstewart@redhat.com)
