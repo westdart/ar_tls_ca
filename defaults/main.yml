@@ -8,6 +8,8 @@ ar_tls_ca_vault_file: '.vault'
 ar_tls_ca_temp_vault_src: '/tmp/vault.yml'
 ar_tls_ca_temp_vault_secret: '/tmp/.vault_secret'
 
+ar_tls_ca_passphrases: {}
+
 ar_tls_ca_basic_assertions:
   - "ar_tls_ca_path is defined"
   - "ar_tls_ca_path is not none"
@@ -15,6 +17,7 @@ ar_tls_ca_basic_assertions:
   - "ar_tls_ca_name is defined"
   - "ar_tls_ca_name is not none"
   - "ar_tls_ca_name | length"
+  - "ar_tls_ca_name in ar_tls_ca_passphrases"
 
 ar_tls_ca_git_assertions:
   - "ar_tls_ca_git_repo is defined"

@@ -32,14 +32,20 @@ The following details:
 ### Defaults
 | Variable                   | Description                                                              | Default           |
 | --------                   | -----------                                                              | -------           |
-| ar_tls_ca_ca_default_days  | Number of days that the CA certificate should be valid                   |                   |
-| ar_tls_ca_default_days     | Number of days that the certificates being signed should be valid        |                   |
-| ar_tls_ca_lookahead_days   | Max number of days overlap with expiring certificates                    |                   |
-| ar_tls_ca_vault_file       | The vault file containing CA secrets                                     |                   |
-| ar_tls_ca_git_ssh_key      | The key to use to access the git repository                              |                   |
-| ar_tls_ca_basic_assertions | List of assertions made                                                  |                   |
-| ar_tls_ca_git_assertions   | List of assertions made                                                  |                   |
+| ar_tls_ca_ca_default_days  | Number of days that the CA certificate should be valid                   | 3650              |
+| ar_tls_ca_default_days     | Number of days that the certificates being signed should be valid        | 365               |
+| ar_tls_ca_lookahead_days   | Max number of days overlap with expiring certificates                    | 30                |
+| ar_tls_ca_vault_file       | The vault file containing CA secrets                                     | '.vault'          |
+| ar_tls_ca_git_ssh_key      | The key to use to access the git repository                              | Not Defined       |
+| ar_tls_ca_basic_assertions | List of assertions made                                                  | See definitions   |
+| ar_tls_ca_git_assertions   | List of assertions made                                                  | See definitions   |
 | ar_tls_ca_git_dest_link    | Symbolic link to create to ensure paths in CA config files remain static | '/tmp/tls_ca_lnk' |
+| ar_tls_ca_passphrases      | Dictionary of passphrases keyed on CA name                               | {} (empty)        |
+
+### Secrets
+The following variables should be provided through an encrypted source:
+- ar_tls_ca_passphrases
+- ar_tls_ca_git_ssh_key
 
 ## Dependencies
 

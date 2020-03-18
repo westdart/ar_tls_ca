@@ -4,7 +4,7 @@
 - name: Create temp secret
   copy:
     dest: "{{ ar_tls_ca_temp_vault_secret }}"
-    content: "{{ ar_tls_ca_vault_passphrase | default('password') }}"
+    content: "{{ ar_tls_ca_passphrases[ar_tls_ca_name] | default('password') }}"
     mode: 0600
   changed_when: false
 
