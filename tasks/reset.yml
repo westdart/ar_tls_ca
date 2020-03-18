@@ -1,0 +1,14 @@
+---
+# This may also be called externally in isolation
+- include_tasks: load-env-vars.yml
+
+- name: Remove CA {{ ar_tls_ca_name }}
+  file:
+    path: "{{ ar_tls_ca_path }}"
+    state: absent
+
+- name: Include git checkin
+  include_tasks: git-checkin.yml
+  vars:
+    comment: "Removing CA {{ ar_tls_ca_name }} as of {{ ansible_date_time.date }} {{ ansible_date_time.time }}"
+  when: ar_tls_ca_git_repo is not none
