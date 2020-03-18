@@ -14,8 +14,8 @@
     ar_git_repo_version: "{{ ar_tls_ca_git_version }}"
 
 - set_fact:
-    _ar_tls_ca_git_repo_dest: "{{ _ar_git_repo_paths[ar_tls_ca_git_repo] }}"
-    ar_tls_ca_path: "{{ _ar_git_repo_paths[ar_tls_ca_git_repo] }}/{{ ar_tls_ca_name }}"
+    _ar_tls_ca_git_repo_dest: "{{ ar_git_repo_paths[ar_tls_ca_git_repo] }}"
+    ar_tls_ca_path: "{{ ar_git_repo_paths[ar_tls_ca_git_repo] }}/{{ ar_tls_ca_name }}"
 
 - name: check status of link
   stat:
